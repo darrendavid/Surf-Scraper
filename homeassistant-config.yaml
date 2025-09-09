@@ -1,0 +1,135 @@
+# Home Assistant Configuration Example
+# Add this to your configuration.yaml file
+
+mqtt:
+  sensor:
+    # Kahalu'u Beach Park Sensors
+    - name: "Kahalu'u Beach Wave Height Summary"
+      state_topic: "homeassistant/sensor/beach_scraper/kahaluu_beach_wave_height_summary/state"
+      unique_id: "kahaluu_beach_wave_height_summary"
+      icon: "mdi:waves"
+      
+    - name: "Kahalu'u Beach Wave Height Low"
+      state_topic: "homeassistant/sensor/beach_scraper/kahaluu_beach_wave_height_low/state"
+      unique_id: "kahaluu_beach_wave_height_low"
+      unit_of_measurement: "ft"
+      device_class: distance
+      icon: "mdi:waves-arrow-down"
+      
+    - name: "Kahalu'u Beach Wave Height High"
+      state_topic: "homeassistant/sensor/beach_scraper/kahaluu_beach_wave_height_high/state"
+      unique_id: "kahaluu_beach_wave_height_high"
+      unit_of_measurement: "ft"
+      device_class: distance
+      icon: "mdi:waves-arrow-up"
+      
+    - name: "Kahalu'u Beach Water Temperature"
+      state_topic: "homeassistant/sensor/beach_scraper/kahaluu_beach_water_temperature/state"
+      unique_id: "kahaluu_beach_water_temperature"
+      unit_of_measurement: "°F"
+      device_class: temperature
+      icon: "mdi:thermometer"
+      
+    - name: "Kahalu'u Beach Wind"
+      state_topic: "homeassistant/sensor/beach_scraper/kahaluu_beach_wind/state"
+      unique_id: "kahaluu_beach_wind"
+      unit_of_measurement: "mph"
+      device_class: wind_speed
+      icon: "mdi:weather-windy"
+      
+    # Kua Bay Sensors
+    - name: "Kua Bay Wave Height Summary"
+      state_topic: "homeassistant/sensor/beach_scraper/kua_bay_wave_height_summary/state"
+      unique_id: "kua_bay_wave_height_summary"
+      icon: "mdi:waves"
+      
+    - name: "Kua Bay Wave Height Low"
+      state_topic: "homeassistant/sensor/beach_scraper/kua_bay_wave_height_low/state"
+      unique_id: "kua_bay_wave_height_low"
+      unit_of_measurement: "ft"
+      device_class: distance
+      icon: "mdi:waves-arrow-down"
+      
+    - name: "Kua Bay Wave Height High"
+      state_topic: "homeassistant/sensor/beach_scraper/kua_bay_wave_height_high/state"
+      unique_id: "kua_bay_wave_height_high"
+      unit_of_measurement: "ft"
+      device_class: distance
+      icon: "mdi:waves-arrow-up"
+      
+    - name: "Kua Bay Water Temperature"
+      state_topic: "homeassistant/sensor/beach_scraper/kua_bay_water_temperature/state"
+      unique_id: "kua_bay_water_temperature"
+      unit_of_measurement: "°F"
+      device_class: temperature
+      icon: "mdi:thermometer"
+      
+    - name: "Kua Bay Wind"
+      state_topic: "homeassistant/sensor/beach_scraper/kua_bay_wind/state"
+      unique_id: "kua_bay_wind"
+      unit_of_measurement: "mph"
+      device_class: wind_speed
+      icon: "mdi:weather-windy"
+      
+    # White Sands Beach Park Sensors
+    - name: "White Sands Wave Height Summary"
+      state_topic: "homeassistant/sensor/beach_scraper/white_sands_wave_height_summary/state"
+      unique_id: "white_sands_wave_height_summary"
+      icon: "mdi:waves"
+      
+    - name: "White Sands Wave Height Low"
+      state_topic: "homeassistant/sensor/beach_scraper/white_sands_wave_height_low/state"
+      unique_id: "white_sands_wave_height_low"
+      unit_of_measurement: "ft"
+      device_class: distance
+      icon: "mdi:waves-arrow-down"
+      
+    - name: "White Sands Wave Height High"
+      state_topic: "homeassistant/sensor/beach_scraper/white_sands_wave_height_high/state"
+      unique_id: "white_sands_wave_height_high"
+      unit_of_measurement: "ft"
+      device_class: distance
+      icon: "mdi:waves-arrow-up"
+      
+    - name: "White Sands Water Temperature"
+      state_topic: "homeassistant/sensor/beach_scraper/white_sands_water_temperature/state"
+      unique_id: "white_sands_water_temperature"
+      unit_of_measurement: "°F"
+      device_class: temperature
+      icon: "mdi:thermometer"
+      
+    - name: "White Sands Wind"
+      state_topic: "homeassistant/sensor/beach_scraper/white_sands_wind/state"
+      unique_id: "white_sands_wind"
+      unit_of_measurement: "mph"
+      device_class: wind_speed
+      icon: "mdi:weather-windy"
+
+# Example Lovelace Card Configuration
+# Add this to your dashboard
+
+# type: vertical-stack
+# cards:
+#   - type: markdown
+#     content: "# 🏖️ Big Island Beach Conditions"
+#   
+#   - type: entities
+#     title: "Kahalu'u Beach Park"
+#     entities:
+#       - entity: sensor.kahaluu_beach_wave_height
+#       - entity: sensor.kahaluu_beach_water_temperature
+#       - entity: sensor.kahaluu_beach_wind
+#   
+#   - type: entities
+#     title: "Kua Bay"
+#     entities:
+#       - entity: sensor.kua_bay_wave_height
+#       - entity: sensor.kua_bay_water_temperature
+#       - entity: sensor.kua_bay_wind
+#   
+#   - type: entities
+#     title: "White Sands Beach Park"
+#     entities:
+#       - entity: sensor.white_sands_wave_height
+#       - entity: sensor.white_sands_water_temperature
+#       - entity: sensor.white_sands_wind
