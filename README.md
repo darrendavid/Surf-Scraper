@@ -35,6 +35,19 @@ This Node.js application scrapes beach condition data from SafeBeachDay.com for 
    SCRAPE_INTERVAL_MINUTES=30
    ```
 
+## Environment Variables
+
+The following environment variables can be configured:
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `MQTT_BROKER` | `localhost` | MQTT broker hostname or IP |
+| `MQTT_PORT` | `1883` | MQTT broker port |
+| `MQTT_USERNAME` | _(empty)_ | MQTT username |
+| `MQTT_PASSWORD` | _(empty)_ | MQTT password |
+| `MQTT_CLIENT_ID` | `beach-scraper` | MQTT client identifier |
+| `SCRAPE_INTERVAL_MINUTES` | `30` | How often to scrape data (minutes) |
+
 ## Usage
 
 ### Running the Application
@@ -68,12 +81,49 @@ npm test
 npm run test:puppeteer
 ```
 
-### Running as a Service
+### Running with Docker
 
-For production, consider using PM2:
+The application includes Docker support for easy deployment:
+
+1. **Using Docker Compose (Recommended)**:
+   ```bash
+   # Copy environment template
+   cp .env.docker .env
+   
+   # Edit .env with your MQTT broker settings
+   nano .env
+   
+   # Build and start the container
+   docker-compose up -d
+   ```
+
+2. **Using Docker directly**:
+   ```bash
+   # Build the image
+   docker build -t beach-scraper .
+   
+   # Run the container
+   docker run -d \
+     --name beach-scraper \
+     -e MQTT_BROKER=192.168.1.100 \
+     -e MQTT_USERNAME=homeassistant \
+     -e MQTT_PASSWORD=your-password \
+     beach-scraper
+   ```
+
+3. **View logs**:
+   ```bash
+   docker-compose logs -f beach-scraper
+   # or
+   docker logs -f beach-scraper
+   ```
+
+### Running as a Service (Non-Docker)
+
+For production without Docker, consider using PM2:
 ```bash
 npm install -g pm2
-pm2 start index.js --name beach-scraper
+pm2 start index-puppeteer.js --name beach-scraper
 pm2 save
 pm2 startup
 ```
@@ -130,9 +180,22 @@ Beach IDs:
 
 ## Troubleshooting
 
+### General Issues
 1. **MQTT Connection Issues**: Check your MQTT broker is running and accessible
 2. **No Data Appearing**: Check console logs for scraping errors
 3. **Missing Values**: The website structure may have changed; check the scraper selectors
+
+### Docker Issues
+1. **Container won't start**: Check logs with `docker-compose logs beach-scraper`
+2. **Can't connect to MQTT broker**: Ensure the broker IP is accessible from within Docker
+3. **Puppeteer errors**: The container includes all necessary dependencies for headless Chrome
+4. **Network issues**: If using `localhost` for MQTT broker, change to your host machine's IP address
+   ```bash
+   # Find your host IP (Linux/Mac)
+   ip addr show
+   # Or use host.docker.internal for Docker Desktop
+   MQTT_BROKER=host.docker.internal
+   ```
 
 ## License
 

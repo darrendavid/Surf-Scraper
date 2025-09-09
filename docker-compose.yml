@@ -1,0 +1,64 @@
+version: '3.8'
+
+services:
+  beach-scraper:
+    build: .
+    image: beach-scraper:latest
+    container_name: beach-scraper
+    restart: unless-stopped
+    environment:
+      # MQTT Configuration
+      - MQTT_BROKER=${MQTT_BROKER:-localhost}
+      - MQTT_PORT=${MQTT_PORT:-1883}
+      - MQTT_USERNAME=${MQTT_USERNAME:-}
+      - MQTT_PASSWORD=${MQTT_PASSWORD:-}
+      - MQTT_CLIENT_ID=${MQTT_CLIENT_ID:-beach-scraper}
+      
+      # Scraper Configuration
+      - SCRAPE_INTERVAL_MINUTES=${SCRAPE_INTERVAL_MINUTES:-30}
+      
+      # Puppeteer Configuration
+      - PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=false
+      
+    # Uncomment if you need to connect to MQTT broker on host
+    # network_mode: host
+    
+    # Or use a custom network
+    networks:
+      - beach-scraper-network
+    
+    # Security options for Puppeteer
+    security_opt:
+      - seccomp:unconfined
+    
+    # Logging configuration
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Optional: Include Mosquitto MQTT broker
+  # Uncomment the following section if you want to run MQTT broker in Docker
+  # mosquitto:
+  #   image: eclipse-mosquitto:latest
+  #   container_name: mosquitto
+  #   restart: unless-stopped
+  #   ports:
+  #     - "1883:1883"
+  #     - "9001:9001"
+  #   volumes:
+  #     - mosquitto-data:/mosquitto/data
+  #     - mosquitto-logs:/mosquitto/log
+  #     - ./mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+  #   networks:
+  #     - beach-scraper-network
+
+networks:
+  beach-scraper-network:
+    driver: bridge
+
+# Uncomment if using Mosquitto
+# volumes:
+#   mosquitto-data:
+#   mosquitto-logs:
