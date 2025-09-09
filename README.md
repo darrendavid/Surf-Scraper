@@ -85,7 +85,19 @@ npm run test:puppeteer
 
 The application includes Docker support for easy deployment:
 
-1. **Using Docker Compose (Recommended)**:
+1. **Using Pre-built Image from GitHub (Recommended)**:
+   ```bash
+   # Copy environment template
+   cp .env.docker .env
+   
+   # Edit .env with your MQTT broker settings
+   nano .env
+   
+   # Use the GitHub Container Registry image
+   docker-compose -f docker-compose.github.yml up -d
+   ```
+
+2. **Building Locally**:
    ```bash
    # Copy environment template
    cp .env.docker .env
@@ -97,12 +109,18 @@ The application includes Docker support for easy deployment:
    docker-compose up -d
    ```
 
-2. **Using Docker directly**:
+3. **Using Docker directly**:
    ```bash
-   # Build the image
+   # Using pre-built image
+   docker run -d \
+     --name beach-scraper \
+     -e MQTT_BROKER=192.168.1.100 \
+     -e MQTT_USERNAME=homeassistant \
+     -e MQTT_PASSWORD=your-password \
+     ghcr.io/darrendavid/surf-scraper:latest
+     
+   # Or build locally first
    docker build -t beach-scraper .
-   
-   # Run the container
    docker run -d \
      --name beach-scraper \
      -e MQTT_BROKER=192.168.1.100 \
@@ -111,7 +129,7 @@ The application includes Docker support for easy deployment:
      beach-scraper
    ```
 
-3. **View logs**:
+4. **View logs**:
    ```bash
    docker-compose logs -f beach-scraper
    # or
