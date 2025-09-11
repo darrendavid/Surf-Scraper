@@ -5,7 +5,9 @@
       "Bash(npm install:*)",
       "Bash(npm test)",
       "Bash(node:*)",
-      "Bash(npm run test:puppeteer:*)"
+      "Bash(npm run test:puppeteer:*)",
+      "Bash(git add:*)",
+      "Bash(git reset:*)"
     ],
     "deny": [],
     "ask": []

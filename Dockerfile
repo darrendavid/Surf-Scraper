@@ -1,7 +1,7 @@
 # Use Node.js base image with Puppeteer dependencies
 FROM node:18-slim
 
-# Install dependencies for Puppeteer
+# Install dependencies for Puppeteer and troubleshooting tools
 RUN apt-get update && apt-get install -y \
     wget \
     ca-certificates \
@@ -40,6 +40,12 @@ RUN apt-get update && apt-get install -y \
     libxtst6 \
     lsb-release \
     xdg-utils \
+    # Troubleshooting tools
+    iputils-ping \
+    iproute2 \
+    net-tools \
+    curl \
+    telnet \
     && rm -rf /var/lib/apt/lists/*
 
 # Create app directory

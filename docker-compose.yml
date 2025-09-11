@@ -8,7 +8,7 @@ services:
     restart: unless-stopped
     environment:
       # MQTT Configuration
-      - MQTT_BROKER=${MQTT_BROKER:-localhost}
+      - MQTT_BROKER=${MQTT_BROKER:-host.docker.internal}
       - MQTT_PORT=${MQTT_PORT:-1883}
       - MQTT_USERNAME=${MQTT_USERNAME:-}
       - MQTT_PASSWORD=${MQTT_PASSWORD:-}
@@ -20,8 +20,9 @@ services:
       # Puppeteer Configuration
       - PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=false
       
-    # Uncomment if you need to connect to MQTT broker on host
-    # network_mode: host
+    # Add extra host for Linux (optional, Windows/Mac don't need this)
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     
     # Or use a custom network
     networks:
