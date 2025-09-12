@@ -40,6 +40,8 @@ RUN apt-get update && apt-get install -y \
     libxtst6 \
     lsb-release \
     xdg-utils \
+    # Install Chromium
+    chromium \
     # Troubleshooting tools
     iputils-ping \
     iproute2 \
@@ -70,7 +72,7 @@ RUN groupadd -r scraper && useradd -r -g scraper -G audio,video scraper \
 USER scraper
 
 # Set environment variables for Puppeteer
-ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=false
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
 ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
 
 # Default environment variables (can be overridden)
