@@ -125,6 +125,51 @@ class MQTTPublisher {
         });
     }
 
+    async publishBoxJellyfishRisk(risk) {
+        if (!this.connected) {
+            console.log('Not connected to MQTT broker, attempting to connect...');
+            await this.connect();
+        }
+
+        const sensorId = 'box_jellyfish_risk';
+        const configTopic = `${this.baseTopic}/${sensorId}/config`;
+        const stateTopic = `${this.baseTopic}/${sensorId}/state`;
+
+        // Home Assistant auto-discovery configuration
+        const config = {
+            name: 'Box Jellyfish Risk',
+            state_topic: stateTopic,
+            unique_id: sensorId,
+            device: {
+                identifiers: ['hawaii_marine_conditions'],
+                name: 'Hawaii Marine Conditions',
+                model: 'Marine Safety Monitor',
+                manufacturer: 'SafeBeachDay Scraper'
+            },
+            icon: 'mdi:jellyfish',
+            options: ['None', 'Low Probability', 'High Probability'],
+            device_class: 'enum'
+        };
+
+        // Publish configuration for auto-discovery
+        this.client.publish(configTopic, JSON.stringify(config), { retain: true }, (error) => {
+            if (error) {
+                console.error(`Error publishing config for Box Jellyfish Risk:`, error);
+            } else {
+                console.log(`Published Box Jellyfish Risk config`);
+            }
+        });
+
+        // Publish the actual sensor value
+        this.client.publish(stateTopic, risk, { retain: true }, (error) => {
+            if (error) {
+                console.error(`Error publishing Box Jellyfish Risk state:`, error);
+            } else {
+                console.log(`Published Box Jellyfish Risk: ${risk}`);
+            }
+        });
+    }
+
     disconnect() {
         if (this.client) {
             this.client.end();

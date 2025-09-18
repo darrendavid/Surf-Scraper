@@ -1,0 +1,1 @@
+* Add scraping from https://eha-cloud.doh.hawaii.gov/cwb/#!/viewer?eventId=1942 to see if there are any water quality advisories

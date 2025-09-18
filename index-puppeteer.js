@@ -2,10 +2,12 @@ require('dotenv').config();
 const cron = require('node-cron');
 const BeachDataScraperPuppeteer = require('./scraper-puppeteer');
 const MQTTPublisher = require('./mqttPublisher');
+const BoxJellyfishRiskCalculator = require('./boxJellyfishRisk');
 
 class BeachMonitor {
     constructor() {
         this.scraper = new BeachDataScraperPuppeteer();
+        this.boxJellyfishCalculator = new BoxJellyfishRiskCalculator();
         this.mqttPublisher = new MQTTPublisher({
             broker: process.env.MQTT_BROKER || 'localhost',
             port: process.env.MQTT_PORT || 1883,
@@ -28,13 +30,29 @@ class BeachMonitor {
         }
     }
 
+    async updateBoxJellyfishRisk() {
+        try {
+            console.log(`\n[${new Date().toISOString()}] Updating Box Jellyfish Risk...`);
+
+            // Calculate current risk
+            const risk = await this.boxJellyfishCalculator.calculateRisk();
+
+            // Publish to MQTT
+            await this.mqttPublisher.publishBoxJellyfishRisk(risk);
+
+            console.log(`Box Jellyfish Risk updated: ${risk}`);
+        } catch (error) {
+            console.error('Error updating Box Jellyfish Risk:', error);
+        }
+    }
+
     async runScrapeAndPublish() {
         try {
             console.log(`\n[${new Date().toISOString()}] Starting beach data scrape...`);
-            
+
             // Scrape data from all beaches
             const beachData = await this.scraper.scrapeAllBeaches();
-            
+
             // Publish to MQTT
             await this.mqttPublisher.publishBeachData(beachData);
             
@@ -58,17 +76,26 @@ class BeachMonitor {
 
     start() {
         console.log(`Starting Beach Monitor with ${this.scrapeInterval} minute intervals`);
-        
+
         // Run immediately on start
         this.runScrapeAndPublish();
-        
-        // Schedule periodic updates
+        this.updateBoxJellyfishRisk();
+
+        // Schedule periodic beach data updates
         const cronExpression = `*/${this.scrapeInterval} * * * *`;
         cron.schedule(cronExpression, () => {
             this.runScrapeAndPublish();
         });
-        
-        console.log(`Scheduled to run every ${this.scrapeInterval} minutes`);
+
+        // Schedule Box Jellyfish Risk update at 12:01 AM daily (Hawaii time)
+        // Note: This assumes the server is running in Hawaii timezone
+        // If not, adjust the cron expression accordingly
+        cron.schedule('1 0 * * *', () => {
+            this.updateBoxJellyfishRisk();
+        });
+
+        console.log(`Scheduled beach data to run every ${this.scrapeInterval} minutes`);
+        console.log(`Scheduled Box Jellyfish Risk update daily at 12:01 AM`);
     }
 
     async shutdown() {

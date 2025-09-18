@@ -105,6 +105,17 @@ mqtt:
       device_class: wind_speed
       icon: "mdi:weather-windy"
 
+    # Box Jellyfish Risk Sensor (Global Hawaii Marine Conditions)
+    - name: "Box Jellyfish Risk"
+      state_topic: "homeassistant/sensor/beach_scraper/box_jellyfish_risk/state"
+      unique_id: "box_jellyfish_risk"
+      icon: "mdi:jellyfish"
+      options:
+        - "None"
+        - "Low Probability"
+        - "High Probability"
+      device_class: enum
+
 # Example Lovelace Card Configuration
 # Add this to your dashboard
 
@@ -112,21 +123,27 @@ mqtt:
 # cards:
 #   - type: markdown
 #     content: "# 🏖️ Big Island Beach Conditions"
-#   
+#
+#   - type: entity
+#     entity: sensor.box_jellyfish_risk
+#     name: "Box Jellyfish Risk"
+#     icon: "mdi:jellyfish"
+#     state_color: true
+#
 #   - type: entities
 #     title: "Kahalu'u Beach Park"
 #     entities:
 #       - entity: sensor.kahaluu_beach_wave_height
 #       - entity: sensor.kahaluu_beach_water_temperature
 #       - entity: sensor.kahaluu_beach_wind
-#   
+#
 #   - type: entities
 #     title: "Kua Bay"
 #     entities:
 #       - entity: sensor.kua_bay_wave_height
 #       - entity: sensor.kua_bay_water_temperature
 #       - entity: sensor.kua_bay_wind
-#   
+#
 #   - type: entities
 #     title: "White Sands Beach Park"
 #     entities:
