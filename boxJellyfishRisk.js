@@ -1,4 +1,4 @@
-const axios = require('axios');
+const Astronomy = require('astronomy-engine');
 
 class BoxJellyfishRiskCalculator {
     constructor() {
@@ -7,10 +7,70 @@ class BoxJellyfishRiskCalculator {
             LOW: 'Low Probability',
             HIGH: 'High Probability'
         };
+
+        // Kailua-Kona, Hawaii coordinates
+        this.location = {
+            latitude: 19.6400,   // North is positive
+            longitude: -155.9969, // West is negative
+            name: 'Kailua-Kona, Hawaii'
+        };
     }
 
     /**
-     * Calculate days since last full moon for Hawaii timezone
+     * Find the most recent full moon before or on the given date
+     * @param {Date} date - The date to check
+     * @returns {Date} The date of the most recent full moon
+     */
+    findLastFullMoon(date) {
+        // Search for the full moon that occurred most recently
+        // We'll search backward from the given date
+        const searchDate = new Date(date);
+
+        // Search up to 35 days back (more than one lunar cycle)
+        for (let daysBack = 0; daysBack <= 35; daysBack++) {
+            const checkDate = new Date(searchDate);
+            checkDate.setDate(searchDate.getDate() - daysBack);
+
+            // Use astronomy-engine to find moon phase
+            const moonPhase = Astronomy.MoonPhase(checkDate);
+
+            // Full moon occurs at phase ~180 degrees
+            // Check if this day contains a full moon (phase crosses 180)
+            const nextDay = new Date(checkDate);
+            nextDay.setDate(checkDate.getDate() + 1);
+            const nextPhase = Astronomy.MoonPhase(nextDay);
+
+            // If phase goes from < 180 to > 180, or is very close to 180, we found a full moon
+            if ((moonPhase < 180 && nextPhase > 180) || Math.abs(moonPhase - 180) < 1) {
+                // Find the exact moment of full moon on this day
+                const fullMoonSearch = Astronomy.SearchMoonPhase(180, checkDate, 2);
+                if (fullMoonSearch) {
+                    // Convert to local date for Hawaii
+                    const fullMoonDate = new Date(fullMoonSearch.date);
+                    // Set to midnight local time for consistent day counting
+                    fullMoonDate.setHours(0, 0, 0, 0);
+                    return fullMoonDate;
+                }
+            }
+        }
+
+        // Fallback: use astronomy-engine's SearchMoonPhase to find the last full moon
+        const searchStart = new Date(date);
+        searchStart.setDate(date.getDate() - 35);
+        const fullMoonSearch = Astronomy.SearchMoonPhase(180, searchStart, 40);
+
+        if (fullMoonSearch) {
+            const fullMoonDate = new Date(fullMoonSearch.date);
+            fullMoonDate.setHours(0, 0, 0, 0);
+            return fullMoonDate;
+        }
+
+        // This shouldn't happen, but provide a fallback
+        throw new Error('Could not find last full moon');
+    }
+
+    /**
+     * Calculate days since last full moon for a given date
      * @param {Date} date - The date to check
      * @returns {number} Days since last full moon
      */
@@ -20,32 +80,10 @@ class BoxJellyfishRiskCalculator {
             const checkDate = new Date(date);
             checkDate.setHours(0, 0, 0, 0);
 
-            // Get lunar phase data from astronomy API
-            // Using a simple calculation based on lunar cycle (29.53 days)
-            const lunarCycle = 29.53;
-
-            // Reference full moon date (October 6, 2025 as per example)
-            // In production, this should use an astronomy API or library
-            const referenceMoons = this.getFullMoonDates(checkDate.getFullYear());
-
-            // Find the most recent full moon before or on the given date
-            let lastFullMoon = null;
-            for (const moonDate of referenceMoons) {
-                if (moonDate <= checkDate) {
-                    lastFullMoon = moonDate;
-                } else {
-                    break;
-                }
-            }
-
-            if (!lastFullMoon) {
-                // If no full moon found this year, check previous year
-                const prevYearMoons = this.getFullMoonDates(checkDate.getFullYear() - 1);
-                lastFullMoon = prevYearMoons[prevYearMoons.length - 1];
-            }
+            // Find the last full moon
+            const lastFullMoon = this.findLastFullMoon(checkDate);
 
             // Calculate days difference
-            // We need to count days AFTER the full moon, not including the full moon day itself
             const diffTime = checkDate - lastFullMoon;
             const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
 
@@ -57,85 +95,50 @@ class BoxJellyfishRiskCalculator {
     }
 
     /**
-     * Get full moon dates for a given year
-     * Note: This is a simplified calculation. In production, use an astronomy library
-     * or API for accurate moon phase data
+     * Get all full moon dates for a given year using astronomy-engine
      * @param {number} year - The year to get full moon dates for
      * @returns {Array<Date>} Array of full moon dates
      */
     getFullMoonDates(year) {
-        // Full moon dates for each year (date only, no time)
-        // These are the dates when the full moon occurs in Hawaii
-        // Using year, month (0-indexed), day to avoid timezone issues
-        const fullMoons2025 = [
-            new Date(2025, 0, 13),  // Jan 13
-            new Date(2025, 1, 12),  // Feb 12
-            new Date(2025, 2, 14),  // Mar 14
-            new Date(2025, 3, 12),  // Apr 12
-            new Date(2025, 4, 12),  // May 12
-            new Date(2025, 5, 11),  // Jun 11
-            new Date(2025, 6, 10),  // Jul 10
-            new Date(2025, 7, 9),   // Aug 9
-            new Date(2025, 8, 7),   // Sep 7
-            new Date(2025, 9, 6),   // Oct 6 as per user's example
-            new Date(2025, 10, 5),  // Nov 5
-            new Date(2025, 11, 4)   // Dec 4
-        ];
+        const fullMoons = [];
 
-        const fullMoons2024 = [
-            new Date(2024, 0, 25),  // Jan 25
-            new Date(2024, 1, 24),  // Feb 24
-            new Date(2024, 2, 25),  // Mar 25
-            new Date(2024, 3, 23),  // Apr 23
-            new Date(2024, 4, 23),  // May 23
-            new Date(2024, 5, 21),  // Jun 21
-            new Date(2024, 6, 21),  // Jul 21
-            new Date(2024, 7, 19),  // Aug 19
-            new Date(2024, 8, 17),  // Sep 17
-            new Date(2024, 9, 17),  // Oct 17
-            new Date(2024, 10, 15), // Nov 15
-            new Date(2024, 11, 15)  // Dec 15
-        ];
+        // Start from January 1st of the given year
+        let searchDate = new Date(year, 0, 1, 0, 0, 0);
+        const yearEnd = new Date(year, 11, 31, 23, 59, 59);
 
-        const fullMoons2026 = [
-            new Date(2026, 0, 3),   // Jan 3
-            new Date(2026, 1, 1),   // Feb 1
-            new Date(2026, 2, 3),   // Mar 3
-            new Date(2026, 3, 1),   // Apr 1
-            new Date(2026, 4, 1),   // May 1
-            new Date(2026, 4, 31),  // May 31
-            new Date(2026, 5, 29),  // Jun 29
-            new Date(2026, 6, 29),  // Jul 29
-            new Date(2026, 7, 28),  // Aug 28
-            new Date(2026, 8, 26),  // Sep 26
-            new Date(2026, 9, 26),  // Oct 26
-            new Date(2026, 10, 25), // Nov 25
-            new Date(2026, 11, 25)  // Dec 25
-        ];
+        while (searchDate < yearEnd) {
+            // Search for the next full moon (phase 180 degrees)
+            const moonEvent = Astronomy.SearchMoonPhase(180, searchDate, 40);
 
-        switch(year) {
-            case 2024:
-                return fullMoons2024;
-            case 2025:
-                return fullMoons2025;
-            case 2026:
-                return fullMoons2026;
-            default:
-                // For other years, use a simple approximation
-                // This should be replaced with proper astronomical calculations
-                const moons = [];
-                const startDate = new Date(year, 0, 1);
-                const lunarCycle = 29.53;
+            if (moonEvent) {
+                const fullMoonDate = moonEvent.date;
+                if (fullMoonDate < yearEnd) {
+                    // Adjust for Hawaii timezone if needed
+                    // Note: astronomy-engine returns UTC times
+                    const hawaiiDate = new Date(fullMoonDate.getTime() - 10 * 60 * 60 * 1000);
 
-                for (let i = 0; i < 13; i++) {
-                    const moonDate = new Date(startDate);
-                    moonDate.setDate(moonDate.getDate() + (i * lunarCycle));
-                    if (moonDate.getFullYear() === year) {
-                        moons.push(moonDate);
-                    }
+                    // Store just the date part (at midnight local time)
+                    const localDate = new Date(
+                        hawaiiDate.getFullYear(),
+                        hawaiiDate.getMonth(),
+                        hawaiiDate.getDate(),
+                        0, 0, 0
+                    );
+
+                    fullMoons.push(localDate);
+
+                    // Move search date forward by 25 days (less than lunar cycle) to find next full moon
+                    searchDate = new Date(fullMoonDate);
+                    searchDate.setDate(searchDate.getDate() + 25);
+                } else {
+                    break;
                 }
-                return moons;
+            } else {
+                break;
+            }
         }
+
+        return fullMoons;
     }
 
     /**
@@ -182,6 +185,34 @@ class BoxJellyfishRiskCalculator {
         }
 
         return forecast;
+    }
+
+    /**
+     * Get detailed moon information for a given date
+     * @param {Date} date - The date to check
+     * @returns {Object} Moon phase information
+     */
+    getMoonInfo(date = new Date()) {
+        const phase = Astronomy.MoonPhase(date);
+        const illumination = Astronomy.Illumination('Moon', date);
+
+        // Determine phase name
+        let phaseName;
+        if (phase < 22.5 || phase >= 337.5) phaseName = 'New Moon';
+        else if (phase < 67.5) phaseName = 'Waxing Crescent';
+        else if (phase < 112.5) phaseName = 'First Quarter';
+        else if (phase < 157.5) phaseName = 'Waxing Gibbous';
+        else if (phase < 202.5) phaseName = 'Full Moon';
+        else if (phase < 247.5) phaseName = 'Waning Gibbous';
+        else if (phase < 292.5) phaseName = 'Last Quarter';
+        else phaseName = 'Waning Crescent';
+
+        return {
+            phase: phase,
+            phaseName: phaseName,
+            illumination: illumination.phase_fraction * 100,
+            date: date.toISOString().split('T')[0]
+        };
     }
 }
 
