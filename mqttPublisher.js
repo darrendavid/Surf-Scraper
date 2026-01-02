@@ -136,6 +136,8 @@ class MQTTPublisher {
         const stateTopic = `${this.baseTopic}/${sensorId}/state`;
 
         // Home Assistant auto-discovery configuration
+        // Note: The enum options and device_class are defined in mqtt.yaml to avoid conflicts
+        // with manual MQTT configuration. Auto-discovery only provides basic sensor info.
         const config = {
             name: 'Box Jellyfish Risk',
             state_topic: stateTopic,
@@ -146,9 +148,7 @@ class MQTTPublisher {
                 model: 'Marine Safety Monitor',
                 manufacturer: 'SafeBeachDay Scraper'
             },
-            icon: 'mdi:jellyfish',
-            options: ['None', 'Low Probability', 'High Probability'],
-            device_class: 'enum'
+            icon: 'mdi:jellyfish'
         };
 
         // Publish configuration for auto-discovery
