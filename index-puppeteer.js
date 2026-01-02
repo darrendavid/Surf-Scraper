@@ -87,21 +87,14 @@ class BeachMonitor {
         this.runScrapeAndPublish();
         this.updateBoxJellyfishRisk();
 
-        // Schedule periodic beach data updates
+        // Schedule periodic beach data and box jellyfish risk updates
         const cronExpression = `*/${this.scrapeInterval} * * * *`;
         cron.schedule(cronExpression, () => {
             this.runScrapeAndPublish();
-        });
-
-        // Schedule Box Jellyfish Risk update at 12:01 AM daily (Hawaii time)
-        // Note: This assumes the server is running in Hawaii timezone
-        // If not, adjust the cron expression accordingly
-        cron.schedule('1 0 * * *', () => {
             this.updateBoxJellyfishRisk();
         });
 
-        console.log(`Scheduled beach data to run every ${this.scrapeInterval} minutes`);
-        console.log(`Scheduled Box Jellyfish Risk update daily at 12:01 AM`);
+        console.log(`Scheduled beach data and box jellyfish updates to run every ${this.scrapeInterval} minutes`);
     }
 
     async shutdown() {
