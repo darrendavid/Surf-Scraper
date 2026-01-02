@@ -132,33 +132,11 @@ class MQTTPublisher {
         }
 
         const sensorId = 'box_jellyfish_risk';
-        const configTopic = `${this.baseTopic}/${sensorId}/config`;
         const stateTopic = `${this.baseTopic}/${sensorId}/state`;
 
-        // Home Assistant auto-discovery configuration
-        // Note: The enum options and device_class are defined in mqtt.yaml to avoid conflicts
-        // with manual MQTT configuration. Auto-discovery only provides basic sensor info.
-        const config = {
-            name: 'Box Jellyfish Risk',
-            state_topic: stateTopic,
-            unique_id: sensorId,
-            device: {
-                identifiers: ['hawaii_marine_conditions'],
-                name: 'Hawaii Marine Conditions',
-                model: 'Marine Safety Monitor',
-                manufacturer: 'SafeBeachDay Scraper'
-            },
-            icon: 'mdi:jellyfish'
-        };
-
-        // Publish configuration for auto-discovery
-        this.client.publish(configTopic, JSON.stringify(config), { retain: true }, (error) => {
-            if (error) {
-                console.error(`Error publishing config for Box Jellyfish Risk:`, error);
-            } else {
-                console.log(`Published Box Jellyfish Risk config`);
-            }
-        });
+        // Note: Auto-discovery is disabled for this sensor to avoid conflicts with mqtt.yaml
+        // The sensor configuration is defined in mqtt.yaml with proper enum options
+        // We only publish the state value here
 
         // Publish the actual sensor value
         this.client.publish(stateTopic, risk, { retain: true }, (error) => {
