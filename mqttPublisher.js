@@ -135,7 +135,8 @@ class MQTTPublisher {
         const stateTopic = `${this.baseTopic}/${sensorId}/state`;
 
         // Note: Auto-discovery is disabled for this sensor to avoid conflicts with mqtt.yaml
-        // The sensor configuration is defined in mqtt.yaml with proper enum options
+        // The sensor configuration is defined in mqtt.yaml with enum options:
+        // "No Risk", "Low Probability", "High Probability"
         // We only publish the state value here
 
         // Publish the actual sensor value

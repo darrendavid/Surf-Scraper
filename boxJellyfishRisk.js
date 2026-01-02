@@ -3,7 +3,7 @@ const Astronomy = require('astronomy-engine');
 class BoxJellyfishRiskCalculator {
     constructor() {
         this.riskStates = {
-            NONE: 'None',
+            NONE: 'No Risk',
             LOW: 'Low Probability',
             HIGH: 'High Probability'
         };

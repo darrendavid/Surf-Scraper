@@ -11,16 +11,16 @@ async function testBoxJellyfishRisk() {
     console.log('-' . repeat(50));
 
     const testDates = [
-        { date: new Date('2025-10-01'), expected: 'None' },
-        { date: new Date('2025-10-12'), expected: 'None' },
-        { date: new Date('2025-10-13'), expected: 'None' },
+        { date: new Date('2025-10-01'), expected: 'No Risk' },
+        { date: new Date('2025-10-12'), expected: 'No Risk' },
+        { date: new Date('2025-10-13'), expected: 'No Risk' },
         { date: new Date('2025-10-14'), expected: 'Low Probability' },  // Day 7 after full moon
         { date: new Date('2025-10-15'), expected: 'High Probability' }, // Day 8 after full moon
         { date: new Date('2025-10-16'), expected: 'High Probability' }, // Day 9 after full moon
         { date: new Date('2025-10-17'), expected: 'High Probability' }, // Day 10 after full moon
         { date: new Date('2025-10-18'), expected: 'Low Probability' },  // Day 11 after full moon
-        { date: new Date('2025-10-19'), expected: 'None' },
-        { date: new Date('2025-10-31'), expected: 'None' }
+        { date: new Date('2025-10-19'), expected: 'No Risk' },
+        { date: new Date('2025-10-31'), expected: 'No Risk' }
     ];
 
     for (const test of testDates) {
@@ -62,7 +62,7 @@ async function testBoxJellyfishRisk() {
             currentRiskLevel = day.risk;
             console.log(`\n${currentRiskLevel}:`);
         }
-        if (day.risk !== 'None') {
+        if (day.risk !== 'No Risk') {
             console.log(`  ${day.date} (Day ${day.daysSinceFullMoon})`);
         }
     });
@@ -70,7 +70,7 @@ async function testBoxJellyfishRisk() {
     // Show summary
     const highRiskDays = forecast.filter(d => d.risk === 'High Probability').length;
     const lowRiskDays = forecast.filter(d => d.risk === 'Low Probability').length;
-    const noRiskDays = forecast.filter(d => d.risk === 'None').length;
+    const noRiskDays = forecast.filter(d => d.risk === 'No Risk').length;
 
     console.log('\n📊 30-Day Summary:');
     console.log('-' . repeat(50));
@@ -108,7 +108,7 @@ async function testBoxJellyfishRisk() {
             const risk = await calculator.calculateRisk(checkDate);
             const daysSince = await calculator.getDaysSinceFullMoon(checkDate);
 
-            if (risk !== 'None') {
+            if (risk !== 'No Risk') {
                 if (!inWindow) {
                     inWindow = true;
                     windowDates = [];
