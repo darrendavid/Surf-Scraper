@@ -214,6 +214,66 @@ class BoxJellyfishRiskCalculator {
             date: date.toISOString().split('T')[0]
         };
     }
+
+    /**
+     * Get the current or next box jellyfish risk window
+     * @returns {Object|null} Object with startDate and endDate, or null if no window in next 60 days
+     */
+    async getNextRiskWindow() {
+        // Check the next 60 days (covers ~2 lunar cycles)
+        const forecast = await this.getForecast(60);
+
+        // Find the first occurrence of a risk period (Low or High Probability)
+        let windowStart = null;
+        let windowEnd = null;
+
+        for (let i = 0; i < forecast.length; i++) {
+            const day = forecast[i];
+
+            // Check if this day has risk
+            if (day.risk !== this.riskStates.NONE) {
+                if (!windowStart) {
+                    // This is the start of a risk window
+                    // Parse the date string as a local date (not UTC) to avoid timezone shifts
+                    const [year, month, dayNum] = day.date.split('-').map(Number);
+                    windowStart = new Date(year, month - 1, dayNum);
+                }
+                // Track the end as we go
+                const [year, month, dayNum] = day.date.split('-').map(Number);
+                windowEnd = new Date(year, month - 1, dayNum);
+            } else if (windowStart && windowEnd) {
+                // We've found a complete window (risk days followed by no risk)
+                break;
+            }
+        }
+
+        if (windowStart && windowEnd) {
+            return {
+                startDate: windowStart,
+                endDate: windowEnd
+            };
+        }
+
+        return null;
+    }
+
+    /**
+     * Format a risk window as a string for display
+     * @param {Object} window - Object with startDate and endDate
+     * @returns {string} Formatted date range (e.g., "Sat Jan 10 - Wed Jan 14")
+     */
+    formatRiskWindow(window) {
+        if (!window) {
+            return 'No upcoming risk window';
+        }
+
+        // Use Pacific/Honolulu timezone for Hawaii
+        const options = { weekday: 'short', month: 'short', day: 'numeric', timeZone: 'Pacific/Honolulu' };
+        const startStr = window.startDate.toLocaleDateString('en-US', options);
+        const endStr = window.endDate.toLocaleDateString('en-US', options);
+
+        return `${startStr} - ${endStr}`;
+    }
 }
 
 module.exports = BoxJellyfishRiskCalculator;

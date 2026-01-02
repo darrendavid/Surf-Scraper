@@ -39,6 +39,17 @@ async function testBoxJellyfishRisk() {
     console.log(`Days since last full moon: ${currentDays}`);
     console.log(`Current risk: ${currentRisk}`);
 
+    // Test next/current risk window
+    console.log('\n📅 Next/Current Risk Window:');
+    console.log('-' . repeat(50));
+    const riskWindow = await calculator.getNextRiskWindow();
+    const windowString = calculator.formatRiskWindow(riskWindow);
+    console.log(`Window: ${windowString}`);
+    if (riskWindow) {
+        console.log(`Start Date: ${riskWindow.startDate.toISOString().split('T')[0]}`);
+        console.log(`End Date: ${riskWindow.endDate.toISOString().split('T')[0]}`);
+    }
+
     // Show 30-day forecast
     console.log('\n📅 30-Day Forecast:');
     console.log('-' . repeat(50));
@@ -66,6 +77,85 @@ async function testBoxJellyfishRisk() {
     console.log(`High Probability: ${highRiskDays} days`);
     console.log(`Low Probability: ${lowRiskDays} days`);
     console.log(`None: ${noRiskDays} days`);
+
+    // Backtest: Show all risk windows for 2025
+    console.log('\n📅 2025 Risk Windows Backtest:');
+    console.log('=' . repeat(50));
+
+    const fullMoons2025 = calculator.getFullMoonDates(2025);
+    console.log('\n🌕 Full Moons in 2025:');
+    fullMoons2025.forEach(fm => {
+        console.log(`  ${fm.toISOString().split('T')[0]}`);
+    });
+
+    console.log('\n📊 Risk Windows for Each Month of 2025:');
+    console.log('-' . repeat(50));
+
+    for (let month = 0; month < 12; month++) {
+        const monthName = new Date(2025, month, 1).toLocaleString('en-US', { month: 'long' });
+        console.log(`\n${monthName} 2025:`);
+
+        // Get the last day of the month
+        const lastDay = new Date(2025, month + 1, 0); // Last day of month
+        const daysInMonth = lastDay.getDate();
+
+        // Check each day of the month
+        let inWindow = false;
+        let windowDates = [];
+
+        for (let day = 1; day <= daysInMonth; day++) {
+            const checkDate = new Date(2025, month, day);
+            const risk = await calculator.calculateRisk(checkDate);
+            const daysSince = await calculator.getDaysSinceFullMoon(checkDate);
+
+            if (risk !== 'None') {
+                if (!inWindow) {
+                    inWindow = true;
+                    windowDates = [];
+                }
+                windowDates.push({
+                    date: checkDate,
+                    risk: risk,
+                    daysSince: daysSince
+                });
+            } else if (inWindow) {
+                // End of window, print it
+                if (windowDates.length > 0) {
+                    const startDate = windowDates[0].date;
+                    const endDate = windowDates[windowDates.length - 1].date;
+                    const options = { weekday: 'short', month: 'short', day: 'numeric', timeZone: 'Pacific/Honolulu' };
+                    const startStr = startDate.toLocaleDateString('en-US', options);
+                    const endStr = endDate.toLocaleDateString('en-US', options);
+
+                    console.log(`  ${startStr} - ${endStr}`);
+                    windowDates.forEach(d => {
+                        const dateStr = d.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'Pacific/Honolulu' });
+                        console.log(`    ${dateStr}: ${d.risk} (Day ${d.daysSince})`);
+                    });
+                }
+                inWindow = false;
+                windowDates = [];
+            }
+        }
+
+        // Handle case where window extends to end of month
+        if (inWindow && windowDates.length > 0) {
+            const startDate = windowDates[0].date;
+            const endDate = windowDates[windowDates.length - 1].date;
+            const options = { weekday: 'short', month: 'short', day: 'numeric', timeZone: 'Pacific/Honolulu' };
+            const startStr = startDate.toLocaleDateString('en-US', options);
+            const endStr = endDate.toLocaleDateString('en-US', options);
+
+            console.log(`  ${startStr} - ${endStr}`);
+            windowDates.forEach(d => {
+                const dateStr = d.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'Pacific/Honolulu' });
+                console.log(`    ${dateStr}: ${d.risk} (Day ${d.daysSince})`);
+            });
+        }
+    }
+
+    console.log('\n' . repeat(2));
+    console.log('Compare these dates with published box jellyfish calendars.');
 }
 
 // Run the test

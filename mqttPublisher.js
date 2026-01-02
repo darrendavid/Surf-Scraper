@@ -170,6 +170,49 @@ class MQTTPublisher {
         });
     }
 
+    async publishBoxJellyfishWindow(windowString) {
+        if (!this.connected) {
+            console.log('Not connected to MQTT broker, attempting to connect...');
+            await this.connect();
+        }
+
+        const sensorId = 'box_jellyfish_next_current_window';
+        const configTopic = `${this.baseTopic}/${sensorId}/config`;
+        const stateTopic = `${this.baseTopic}/${sensorId}/state`;
+
+        // Home Assistant auto-discovery configuration
+        const config = {
+            name: 'Box Jellyfish Next Current Window',
+            state_topic: stateTopic,
+            unique_id: sensorId,
+            device: {
+                identifiers: ['hawaii_marine_conditions'],
+                name: 'Hawaii Marine Conditions',
+                model: 'Marine Safety Monitor',
+                manufacturer: 'SafeBeachDay Scraper'
+            },
+            icon: 'mdi:jellyfish-outline'
+        };
+
+        // Publish configuration for auto-discovery
+        this.client.publish(configTopic, JSON.stringify(config), { retain: true }, (error) => {
+            if (error) {
+                console.error(`Error publishing config for Box Jellyfish Window:`, error);
+            } else {
+                console.log(`Published Box Jellyfish Window config`);
+            }
+        });
+
+        // Publish the actual sensor value
+        this.client.publish(stateTopic, windowString, { retain: true }, (error) => {
+            if (error) {
+                console.error(`Error publishing Box Jellyfish Window state:`, error);
+            } else {
+                console.log(`Published Box Jellyfish Window: ${windowString}`);
+            }
+        });
+    }
+
     disconnect() {
         if (this.client) {
             this.client.end();

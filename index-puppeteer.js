@@ -37,10 +37,16 @@ class BeachMonitor {
             // Calculate current risk
             const risk = await this.boxJellyfishCalculator.calculateRisk();
 
+            // Get the next/current risk window
+            const window = await this.boxJellyfishCalculator.getNextRiskWindow();
+            const windowString = this.boxJellyfishCalculator.formatRiskWindow(window);
+
             // Publish to MQTT
             await this.mqttPublisher.publishBoxJellyfishRisk(risk);
+            await this.mqttPublisher.publishBoxJellyfishWindow(windowString);
 
             console.log(`Box Jellyfish Risk updated: ${risk}`);
+            console.log(`Box Jellyfish Window: ${windowString}`);
         } catch (error) {
             console.error('Error updating Box Jellyfish Risk:', error);
         }
